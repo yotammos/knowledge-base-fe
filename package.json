@@ -1,0 +1,24 @@
+{
+  "name": "knowledge-base-fe",
+  "version": "0.0.1",
+  "description": "The FE of the Knowledge Base App",
+  "main": "index.js",
+  "scripts": {
+    "dev": "parcel src/index.html",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Yotam Mosinzon",
+  "license": "ISC",
+  "dependencies": {
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-router-dom": "^5.1.2"
+  },
+  "devDependencies": {
+    "@types/react": "^16.9.14",
+    "@types/react-dom": "^16.9.4",
+    "parcel-bundler": "^1.12.4",
+    "typescript": "^3.7.2"
+  }
+}
