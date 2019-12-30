@@ -10,6 +10,40 @@ interface State {
   interests: Interest[]
 }
 
+const INFO_HEADER_ROW = [
+    'Name',
+    'Info'
+]
+
+const STOCK_HEADER_ROW = [
+    'Name',
+    'Value',
+    'Time'
+]
+
+const POLL_HEADER_ROW = [
+    'Party',
+    'Candidate',
+    'Percentage'
+]
+
+/*
+      ("cycle", Json fromInt cycle),
+      ("state", Json fromString state.getOrElse("Federal")),
+      ("pollster", Json fromString pollster),
+      ("fteGrade", Json fromString fteGrade),
+      ("sampleSize", Json fromInt sampleSize),
+      ("officeType", Json fromString officeType),
+      ("startDate", Json fromString startDate.toString),
+      ("endDate", Json fromString endDate.toString),
+      ("stage", Json fromString stage),
+      ("entries", Json fromValues entries.map(entry => Json.obj(
+        ("party", Json fromString entry.party),
+        ("candidate", Json fromString entry.candidate),
+        ("percentage", Json.fromDouble(entry.percentage).getOrElse(throw new Exception("can't parse percentage")))
+      )))
+*/
+
 export default class KnowledgeBase extends React.Component<Props, State> {
     state = {
       interests: [
@@ -26,7 +60,7 @@ export default class KnowledgeBase extends React.Component<Props, State> {
       ]
     }
 
-    loadInterests = () => {
+    loadInterests() {
         getInterests('1')
         .then(interests => {
             this.setState({
@@ -35,52 +69,85 @@ export default class KnowledgeBase extends React.Component<Props, State> {
         })
     }
 
-    displayInterests = () =>
-        <div>
-            <h1 id='title'>Interests</h1>
+    displayInterestsByType(title: string, header: string[], interestType: string) {
+        return <div>
+            <h1 id='title'>{title}</h1>
             <table id='interests'>
                 <tbody>
-                    <tr>{this.renderTableHeader()}</tr>
-                    {this.renderTableData()}
+                    <tr>{this.renderTableHeader(header)}</tr>
+                    {this.renderTableData(this.state.interests.filter((interest) => interest.interestType === interestType))}
                 </tbody>
             </table>
         </div>
+    }
 
-    renderTableData() {
-        return this.state.interests.map((interest, index) => {
-            const { name, interestType, resources} = interest
-            return (
-                <tr key={index}>
-                    <td>{name}</td>
-                    <td>{interestType}</td>
-                    <td>{this.renderResource(interestType, resources)}</td>
-                </tr>
-            )
+    displayInterests() {
+        return <div>
+            {this.displayInterestsByType('Info Interests', INFO_HEADER_ROW, 'INFO')}
+            <br />
+            {this.displayInterestsByType('Stock Interests', STOCK_HEADER_ROW, 'STOCK')}
+            <br />
+            {this.displayPollInterests()}
+        </div>
+    }
+
+    displayPollInterests() {
+        const pollInterests = this.state.interests.filter(Interest => Interest.interestType === 'POLL')
+
+        return <div>
+            <h1 id='title'>Poll Interests</h1>
+            {pollInterests.map(interest => interest.resources.map(resource => <div>
+                    Description: Cycle = {resource.cycle}, pollster = {resource.pollster}, dates: {resource.startDate} - {resource.endDate}
+                    <table id='interests'>
+                        <tbody>
+                            <tr>{this.renderTableHeader(POLL_HEADER_ROW)}</tr>
+                            {this.renderPollEntries(resource.entries)}
+                        </tbody>
+                    </table>
+                    <br />
+                </div>
+            ))}
+        </div>
+    }
+
+    renderPollEntries(entries) {
+        return entries.map((entry, index) => {
+            return <tr key={index}>
+                <td>{entry.party}</td>
+                <td>{entry.candidate}</td>
+                <td>{entry.percentage}</td>
+            </tr>
         })
     }
 
-    renderTableHeader() {
-        return Object.keys(this.state.interests[0])
-        .map((key, index) => <th key={index}>{key}</th>)
+    renderTableData(interests) {
+        return interests.map((interest, index) => {
+            return this.buildRowByInterest(interest, index)
+        })
     }
 
-    renderResource(interestType: string, resources: any[]) {
-        console.log(JSON.stringify(resources))
-        if (resources.length === 0) {
-            return <div>No resources found</div>
+    buildRowByInterest(interest, index) {
+        if (interest.interestType === 'INFO') {
+            return <tr key={index}>
+                <td>{interest.name}</td>
+                <td>{interest.resources[0].info}</td>
+            </tr>
+        } else if (interest.interestType === 'STOCK') {
+            return <tr key={index}>
+                <td>{interest.name}</td>
+                <td>{interest.resources[0].currentValue}</td>
+                <td>{interest.resources[0].time}</td>
+            </tr>
         }
-        const resource = resources[0]
-        if (interestType === 'STOCK') {
-            console.info('stock resource')
-            return <div>{`value: ${resource.currentValue}, time: ${resource.time}`}</div>
-        } else if (interestType === 'INFO') {
-            console.info('info resource')
-            return <div>{resource.info}</div>
-        } else if (interestType == 'POLL') {
-            console.log('poll resource')
-            return <div>{`cycle = ${resource.cycle}, pollster = ${resource.pollster}`}</div>
-        }
-        return <div>No resources found</div>
+    }
+
+    renderTableHeader(header: string[]) {
+        return header.map((key, index) => <th key={index}>{key}</th>)
+    }
+
+    renderStockTableHeader() {
+        return Object.keys(STOCK_HEADER_ROW)
+        .map((key, index) => <th key={index}>{key}</th>)
     }
 
     render () {
