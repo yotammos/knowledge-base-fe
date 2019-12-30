@@ -27,7 +27,7 @@ const POLL_HEADER_ROW = [
     'Percentage'
 ]
 
-export default class KnowledgeBase extends React.Component<Props, State> {
+export default class ManageInterests extends React.Component<Props, State> {
     state = {
       interests: [
           {
