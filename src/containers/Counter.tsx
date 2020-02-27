@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Count from './Count'
+import Count from '../components/Count'
 
 interface Props {}
 

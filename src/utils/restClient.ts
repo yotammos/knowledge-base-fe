@@ -1,4 +1,4 @@
-import Interest from './models/Interest'
+import Interest from '../models/Interest'
 
 export async function getData(url: string) {
   const res = await fetch(url)

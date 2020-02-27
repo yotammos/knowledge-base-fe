@@ -1,8 +1,9 @@
 import * as React from 'react'
-import { getInterests } from './restClient'
-import Interest from './models/Interest'
-import StockResource from './models/StockResource'
-import './styles/interests.css'
+import { getInterests } from '../utils/restClient'
+import Interest from '../models/Interest'
+import StockResource from '../models/StockResource'
+import '../styles/interests.css'
+import { INTEREST_TYPES } from '../utils/constants'
 
 interface Props {}
 
@@ -44,7 +45,7 @@ export default class KnowledgeBase extends React.Component<Props, State> {
     }
 
     loadInterests() {
-        getInterests('1')
+        getInterests('2')
         .then(interests => {
             this.setState({
                 interests
@@ -53,29 +54,39 @@ export default class KnowledgeBase extends React.Component<Props, State> {
     }
 
     displayInterestsByType(title: string, header: string[], interestType: string) {
-        return <div>
-            <h1 id='title'>{title}</h1>
-            <table id='interests'>
-                <tbody>
+        if (this.hasInterestsByType(interestType)) {
+            return <div>
+                <h1 id='title'>{title}</h1>
+                <table id='interests'>
+                    <tbody>
                     <tr>{this.renderTableHeader(header)}</tr>
                     {this.renderTableData(this.state.interests.filter((interest) => interest.interestType === interestType))}
-                </tbody>
-            </table>
-        </div>
+                    </tbody>
+                </table>
+            </div>
+        }
     }
 
     displayInterests() {
         return <div>
-            {this.displayInterestsByType('Info Interests', INFO_HEADER_ROW, 'INFO')}
+            {this.displayInterestsByType('Info Interests', INFO_HEADER_ROW, INTEREST_TYPES.INFO)}
             <br />
-            {this.displayInterestsByType('Stock Interests', STOCK_HEADER_ROW, 'STOCK')}
+            {this.displayInterestsByType('Stock Interests', STOCK_HEADER_ROW, INTEREST_TYPES.STOCK)}
             <br />
-            {this.displayPollInterests()}
+            {this.hasInterestsByType(INTEREST_TYPES.POLL) && this.displayPollInterests()}
         </div>
     }
 
+    getInterestsByType(interestType: string) {
+        return this.state.interests.filter(Interest => Interest.interestType === interestType)
+    }
+
+    hasInterestsByType(interestType: string) {
+        return this.getInterestsByType(interestType).length > 0
+    }
+
     displayPollInterests() {
-        const pollInterests = this.state.interests.filter(Interest => Interest.interestType === 'POLL')
+        const pollInterests = this.getInterestsByType(INTEREST_TYPES.POLL)
 
         return <div>
             <h1 id='title'>Poll Interests</h1>
@@ -110,12 +121,12 @@ export default class KnowledgeBase extends React.Component<Props, State> {
     }
 
     buildRowByInterest(interest, index) {
-        if (interest.interestType === 'INFO') {
+        if (interest.interestType === INTEREST_TYPES.INFO) {
             return <tr key={index}>
                 <td>{interest.name}</td>
                 <td>{interest.resources[0].info}</td>
             </tr>
-        } else if (interest.interestType === 'STOCK') {
+        } else if (interest.interestType === INTEREST_TYPES.STOCK) {
             return <tr key={index}>
                 <td>{interest.name}</td>
                 <td>{interest.resources[0].currentValue}</td>
@@ -126,11 +137,6 @@ export default class KnowledgeBase extends React.Component<Props, State> {
 
     renderTableHeader(header: string[]) {
         return header.map((key, index) => <th key={index}>{key}</th>)
-    }
-
-    renderStockTableHeader() {
-        return Object.keys(STOCK_HEADER_ROW)
-        .map((key, index) => <th key={index}>{key}</th>)
     }
 
     render () {
